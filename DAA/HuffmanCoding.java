@@ -1,6 +1,30 @@
 import java.util.*;
 
+class Node {
+    char ch;
+    int freq;
+    Node left, right;
+
+    Node(char ch, int freq) {
+        this.ch = ch;
+        this.freq = freq;
+    }
+}
+
 public class HuffmanCoding {
+
+    static void generateCodes(Node root, String code, Map<Character, String> map) {
+        if (root == null)
+            return;
+
+        if (root.left == null && root.right == null) {
+            map.put(root.ch, code);
+        }
+
+        generateCodes(root.left, code + "0", map);
+        generateCodes(root.right, code + "1", map);
+    }
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
@@ -10,39 +34,40 @@ public class HuffmanCoding {
         char[] chars = new char[n];
         int[] freq = new int[n];
 
-        // Input characters and frequencies
+        System.out.println("\nEnter characters and their frequencies:");
         for (int i = 0; i < n; i++) {
-            System.out.print("Enter character: ");
+            System.out.print("Character " + (i + 1) + ": ");
             chars[i] = sc.next().charAt(0);
-            System.out.print("Enter frequency: ");
+
+            System.out.print("Frequency of " + chars[i] + ": ");
             freq[i] = sc.nextInt();
         }
 
-        // Sort by frequency (ascending)
-        for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) {
-                if (freq[j] > freq[j + 1]) {
-                    int temp = freq[j];
-                    freq[j] = freq[j + 1];
-                    freq[j + 1] = temp;
+        PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a.freq));
 
-                    char t = chars[j];
-                    chars[j] = chars[j + 1];
-                    chars[j + 1] = t;
-                }
-            }
-        }
-
-        // Display simple "greedy" Huffman-style binary codes
-        System.out.println("\nHuffman Codes (Greedy Approach):");
         for (int i = 0; i < n; i++) {
-            String code = "";
-            for (int j = 0; j <= i; j++)
-                code += "0";
-            if (i != n - 1) code = code.substring(0, code.length() - 1) + "1";
-            System.out.println(chars[i] + " -> " + code);
+            pq.add(new Node(chars[i], freq[i]));
         }
 
-        sc.close();
+        while (pq.size() > 1) {
+            Node left = pq.poll();
+            Node right = pq.poll();
+
+            Node newNode = new Node('-', left.freq + right.freq);
+            newNode.left = left;
+            newNode.right = right;
+
+            pq.add(newNode);
+        }
+
+        Node root = pq.poll();
+
+        Map<Character, String> codes = new HashMap<>();
+        generateCodes(root, "", codes);
+
+        System.out.println("\nHuffman Codes:");
+        for (char c : codes.keySet()) {
+            System.out.println(c + " : " + codes.get(c));
+        }
     }
 }
